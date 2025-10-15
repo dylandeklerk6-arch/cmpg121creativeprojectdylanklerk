@@ -69,7 +69,6 @@ void battle(Player& p) {
     else cout << "You died!\n";
 }
 
-// NEW FUNCTION: Save player stats at end to player_stats.txt, fulfilling text file requirement
 void saveStatsToFile(const Player& p) {
     ofstream out("player_stats.txt", ios::app); // Append mode to keep a log
     if (!out) {

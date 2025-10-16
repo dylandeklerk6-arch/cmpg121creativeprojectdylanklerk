@@ -1,6 +1,3 @@
-// 55798640
-//Dylan de Klerk
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -24,7 +21,9 @@ void saveGame(const Player& p) {
     out << p.name << " " << p.pclass << " " << p.hp << " " << p.maxhp << " "
         << p.level << " " << p.attack << " " << p.potions << " " << p.xp << "\n";
     out.close();
-    cout << "Game saved!\n";
+    cout << "\n---------------------\n";
+    cout << "  Game saved!\n";
+    cout << "---------------------\n\n";
 }
 
 bool loadGame(Player& p) {
@@ -32,20 +31,30 @@ bool loadGame(Player& p) {
     if (!in) return false;
     in >> p.name >> p.pclass >> p.hp >> p.maxhp >> p.level >> p.attack >> p.potions >> p.xp;
     in.close();
-    cout << "Game loaded!\n";
+    cout << "\n---------------------\n";
+    cout << "  Game loaded!\n";
+    cout << "---------------------\n\n";
     return true;
 }
 
 void printStats(const Player& p) {
-    cout << "Name: " << p.name << " | Class: " << p.pclass
-         << " | HP: " << p.hp << "/" << p.maxhp << " | ATK: " << p.attack
-         << " | LVL: " << p.level << " | XP: " << p.xp
-         << " | Potions: " << p.potions << "\n";
+    cout << "\n======= PLAYER STATS =======\n";
+    cout << "Name:      " << p.name << endl;
+    cout << "Class:     " << p.pclass << endl;
+    cout << "HP:        " << p.hp << "/" << p.maxhp << endl;
+    cout << "Attack:    " << p.attack << endl;
+    cout << "Level:     " << p.level << endl;
+    cout << "XP:        " << p.xp << endl;
+    cout << "Potions:   " << p.potions << endl;
+    cout << "============================\n";
 }
 
 void levelUp(Player& p) {
     p.level++; p.maxhp += 5; p.attack += 2; p.hp = p.maxhp;
-    cout << "LEVEL UP! Now level " << p.level << ", HP = " << p.hp << "\n";
+    cout << "\n***** LEVEL UP! *****\n";
+    cout << "You are now level " << p.level << "!\n";
+    cout << "Max HP: " << p.maxhp << ", Attack: " << p.attack << "\n";
+    cout << "HP refilled to: " << p.hp << "\n\n";
 }
 
 Enemy randomEnemy() {
@@ -57,20 +66,53 @@ Enemy randomEnemy() {
 
 void battle(Player& p) {
     Enemy e = randomEnemy();
+    cout << "\n---------------------\n";
     cout << "A wild " << e.name << " appears!\n";
+    cout << "Enemy HP: " << e.hp << "  |  Attack: " << e.attack << "\n";
+    cout << "---------------------\n";
+
     while (e.hp > 0 && p.hp > 0) {
-        cout << "Your HP: " << p.hp << " | Enemy HP: " << e.hp << endl;
-        cout << "1. Attack  2. Potion\nChoice: "; int c; cin >> c;
-        if (c == 1) { e.hp -= p.attack; cout << "You hit!\n"; }
-        else if (c == 2 && p.potions > 0) { p.hp += 12; if (p.hp > p.maxhp) p.hp = p.maxhp; p.potions--; cout << "Potion!\n"; }
-        if (e.hp > 0) { p.hp -= e.attack; cout << "Enemy hits!\n"; }
+        cout << "\nYour HP:  " << p.hp << "\nEnemy HP: " << e.hp << endl;
+        cout << "---------------------\n";
+        cout << "Choose your action:\n";
+        cout << "  1. Attack\n  2. Potion\n";
+        cout << "---------------------\n";
+        cout << "Your choice: "; int c; cin >> c;
+
+        if (c == 1) {
+            e.hp -= p.attack;
+            cout << "\nYou hit the enemy for " << p.attack << " damage!" << endl;
+        }
+        else if (c == 2 && p.potions > 0) {
+            int heal = (p.hp + 12 > p.maxhp) ? (p.maxhp - p.hp) : 12;
+            p.hp += heal;
+            p.potions--;
+            cout << "\nYou used a potion and healed " << heal << " HP.\nPotions left: " << p.potions << endl;
+        } else if (c == 2) {
+            cout << "\nNo potions left!" << endl;
+        } else {
+            cout << "\nInvalid choice!" << endl;
+            continue;
+        }
+
+        if (e.hp > 0) {
+            p.hp -= e.attack;
+            cout << "Enemy strikes for " << e.attack << " damage!" << endl;
+        }
     }
-    if (p.hp > 0) { p.xp += e.xp; cout << "Victory! +XP\n"; if (p.xp >= p.level * 20) levelUp(p); }
-    else cout << "You died!\n";
+
+    if (p.hp > 0) {
+        p.xp += e.xp;
+        cout << "\n**** VICTORY! ****\n";
+        cout << "You gained " << e.xp << " XP!\n";
+        if (p.xp >= p.level * 20) levelUp(p);
+    } else {
+        cout << "\n!!!! YOU DIED !!!!\n";
+    }
 }
 
 void saveStatsToFile(const Player& p) {
-    ofstream out("player_stats.txt", ios::app); // Append mode to keep a log
+    ofstream out("player_stats.txt", ios::app);
     if (!out) {
         cout << "Error opening player_stats.txt!\n";
         return;
@@ -83,29 +125,60 @@ void saveStatsToFile(const Player& p) {
 int main() {
     srand((unsigned)time(0));
     Player player = {"", "", 0, 0, 1, 0, 2, 0};
-    cout << "Elden Ring Text Adventure:\n1. New Game 2. Load\nYour choice: ";
-    int choice; cin >> choice;
-    if (choice == 2 && loadGame(player)) { printStats(player); }
-    else {
-        cout << "Enter your name: "; cin >> player.name;
+    cout << "\n========== Elden Ring Text Adventure ==========\n";
+    cout << "   1. New Game\n   2. Load Saved Game\n";
+    cout << "=============================================\n";
+    cout << "Your choice: "; int choice; cin >> choice;
+    if (choice == 2 && loadGame(player)) {
+        // Loaded game, stats will print at menu loop
+    } else {
+        cout << "\nEnter your name: "; cin >> player.name;
         cout << "Choose class (Vagabond/Mage/Samurai): "; cin >> player.pclass;
-        if (player.pclass == "Mage") { player.hp = player.maxhp = 20; player.attack = 7; }
-        else if (player.pclass == "Samurai") { player.hp = player.maxhp = 25; player.attack = 9; }
-        else { player.hp = player.maxhp = 30; player.attack = 11; player.pclass = "Vagabond"; }
+
+        if (player.pclass == "Mage") {
+            player.hp = player.maxhp = 20;
+            player.attack = 7;
+        } else if (player.pclass == "Samurai") {
+            player.hp = player.maxhp = 25;
+            player.attack = 9;
+        } else if (player.pclass == "Vagabond") {
+            player.hp = player.maxhp = 30;
+            player.attack = 11;
+        } else {
+            player.pclass = "Vagabond";
+            player.hp = player.maxhp = 30;
+            player.attack = 11;
+            cout << "Invalid class chosen. Defaulting to Vagabond.\n";
+        }
         player.potions = 2; player.level = 1; player.xp = 0;
+        cout << "Character created!\n";
     }
+
     while (player.hp > 0) {
         printStats(player);
-        cout << "1. Battle 2. Potion 3. Save & Quit\nChoice: ";
-        int c; cin >> c;
+        cout << "---------------------\n";
+        cout << "Main Menu:\n";
+        cout << "  1. Battle\n  2. Use Potion\n  3. Save & Quit\n";
+        cout << "---------------------\n";
+        cout << "Choice: "; int c; cin >> c;
         if (c == 1) battle(player);
         else if (c == 2 && player.potions > 0) {
-            player.hp += 12; if (player.hp > player.maxhp) player.hp = player.maxhp; player.potions--;
-            cout << "Potion used. HP: " << player.hp << endl;
-        } else if (c == 3) { saveGame(player); break; }
+            int heal = (player.hp + 12 > player.maxhp) ? (player.maxhp - player.hp) : 12;
+            player.hp += heal; player.potions--;
+            cout << "\nPotion used. You heal " << heal << " HP. Potions left: " << player.potions << endl;
+            cout << "Current HP: " << player.hp << "\n";
+        } else if (c == 2) {
+            cout << "\nNo potions left!\n";
+        } else if (c == 3) {
+            saveGame(player);
+            cout << "Exiting game...\n";
+            break;
+        } else {
+            cout << "\nInvalid choice! Try again.\n";
+        }
     }
-    // Save player stats at the end of the session
     saveStatsToFile(player);
-    cout << "Game over!\n";
+    cout << "\n========== GAME OVER ==========\n";
+    cout << "Thank you for playing!\n\n";
     return 0;
 }
